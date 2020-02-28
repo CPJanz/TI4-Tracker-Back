@@ -10,6 +10,14 @@ import mockData from "../../util/mockData";
 // Init shared
 const router = Router();
 
+const createGameCode = (): string => {
+  const result = [];
+  for (let i = 0; 6 > i; i++) {
+    result.push(String.fromCharCode(Math.floor(Math.random() * 26) + 65));
+  }
+  return result.join("");
+};
+
 /******************************************************************************
  *                      Get Game by ID - "GET /api/game/:id"
  ******************************************************************************/
@@ -30,49 +38,47 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 /******************************************************************************
- *                       Add One - "POST /api/users/add"
+ *                       Add Game - "POST /api/game/add"
  ******************************************************************************/
 
-// router.post('/add', async (req: Request, res: Response) => {
-//     try {
-//         const { user } = req.body;
-//         if (!user) {
-//             return res.status(BAD_REQUEST).json({
-//                 error: paramMissingError,
-//             });
-//         }
-//         await userDao.add(user);
-//         return res.status(CREATED).end();
-//     } catch (err) {
-//         logger.error(err.message, err);
-//         return res.status(BAD_REQUEST).json({
-//             error: err.message,
-//         });
-//     }
-// });
+router.post("/add", async (req: Request, res: Response) => {
+  let gameCode: string = createGameCode();
+  const game = mockData.TEMP_NEW_GAME_DATA;
+  game.id = gameCode;
+  try {
+    //Hit DB to add a new game with the game and return the game object
+    return res.status(OK).json(game);
+  } catch (err) {
+    logger.error(err.message, err);
+    return res.status(BAD_REQUEST).json({
+      error: err.message
+    });
+  }
+});
 
 // /******************************************************************************
-//  *                       Update - "PUT /api/users/update"
+//  *                       Update - "PUT /api/game/update"
 //  ******************************************************************************/
 
-// router.put('/update', async (req: Request, res: Response) => {
-//     try {
-//         const { user } = req.body;
-//         if (!user) {
-//             return res.status(BAD_REQUEST).json({
-//                 error: paramMissingError,
-//             });
-//         }
-//         user.id = Number(user.id);
-//         await userDao.update(user);
-//         return res.status(OK).end();
-//     } catch (err) {
-//         logger.error(err.message, err);
-//         return res.status(BAD_REQUEST).json({
-//             error: err.message,
-//         });
-//     }
-// });
+router.put("/update", async (req: Request, res: Response) => {
+  try {
+    const game = req.body; //maybe convert this to a game object using a class constructor (spreading the req.body.game)
+
+    if (!game) {
+      return res.status(BAD_REQUEST).json({
+        error: paramMissingError
+      });
+    }
+    game.id = Number(game.id);
+    // Hit database with updated game object
+    return res.status(OK).end();
+  } catch (err) {
+    logger.error(err.message, err);
+    return res.status(BAD_REQUEST).json({
+      error: err.message
+    });
+  }
+});
 
 /******************************************************************************
  *                    Delete - "DELETE /api/users/delete/:id"
